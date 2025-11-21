@@ -1,5 +1,4 @@
-const msgTemplate = document.getElementById('msgTemplate');
-const poductListTemplate = document.getElementById('poductListTemplate');
+const productFormTemplate = document.getElementById('productFormTemplate');
 
 const itemFormTemplate = document.getElementById('itemFormTemplate');
 const itemListTemplate = document.getElementById('itemListTemplate');
@@ -9,23 +8,38 @@ const msgContent = document.getElementById('msg-content');
 const mainContent = document.getElementById('main-content');
 
 let store = {
-    itens: [],
-    products: []
+    itens: [
+        {name: 'Água', price: 5.5, amount: 1, measure: 'lt'},
+        {name: 'Álcool', price: 10.5, amount: 500, measure: 'ml'},
+        {name: 'Cêra', price: 9.3, amount: 1, measure: 'kg'},
+        {name: 'Farinha', price: 6.0, amount: 100, measure: 'gr'},
+        {name: 'Frasco', price: 9.3,  amount: 1, measure: 'un'},
+    ],
+    products: [
+        {name: 'Agua de cheiro'}
+    ]
 }
 
 function sendMessage(textMsg) {
-    let newContent = msgTemplate.innerHTML
-        .replace('title', textMsg + '!')
-        .replace('text', textMsg);
-    msgContent.innerHTML = newContent;
+    let htmlmsg = 
+        `<div class="alert alert-success">
+            ${textMsg}
+        </div>`
+    msgContent.innerHTML = htmlmsg;
 }
 
-function renderBuyForm() {
+function renderItemForm() {
     clearAll();
-    sendMessage('Cadastrar um item para confecção de produtos');
     let newContent = itemFormTemplate.innerHTML;
     mainContent.innerHTML = newContent;
 }
+
+function renderProductForm() {
+    clearAll();
+    let newContent = productFormTemplate.innerHTML;
+    mainContent.innerHTML = newContent;
+}
+
 
 function renderItemList() {
   // limpa conteúdo
@@ -40,7 +54,7 @@ function renderItemList() {
     const rowClone = itemRowTemplate.content.cloneNode(true);
     rowClone.querySelector('.cell-name').textContent = i.name;
     rowClone.querySelector('.cell-price').textContent = i.price;
-    rowClone.querySelector('.cell-unity').textContent = i.unity;
+    rowClone.querySelector('.cell-amount').textContent = i.amount +' '+ i.measure;
     tbody.appendChild(rowClone);
   });
 
@@ -48,16 +62,26 @@ function renderItemList() {
   mainContent.appendChild(tableClone);
 }
 
-function renderMaterialList() {
-    clearAll();
-    sendMessage('Lista de mateiais acessada');
-}
-
 function renderProductList() {
-    clearAll();
-    sendMessage('Lista de produtos acessada')
-    let newContent = poductListTemplate.innerHTML;
-    mainContent.innerHTML = newContent;
+    // limpa conteúdo
+    mainContent.innerHTML = '';
+
+    let rows = '';
+
+    // para cada item, clona a linha e preenche células
+    store.products.forEach(p => {
+        rows += `<tr><td class="cell-name">${p.name}</td></tr>`
+    });
+
+    mainContent.innerHTML = card('Produtos',
+        `<table class="table table-bordered">
+            <thead>
+                <tr><th>Nome</th></tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>`);
 }
 
 function clearMessage() {
@@ -78,11 +102,34 @@ function clearAll() {
 function createItem(event) {
     event.preventDefault(); // evita recarregar a página
     const item = {
-        name: document.getElementById("nome").value,
-        price: parseFloat(document.getElementById("preco").value),
-        unity: document.getElementById("unidade").value
+        name: document.getElementById("name").value,
+        price: parseFloat(document.getElementById("price").value),
+        amount: parseFloat(document.getElementById("amount").value),
+        measure: document.getElementById("measure").value
     };
     store.itens.push(item)
     renderItemList();
-    //alert("Item criado:\n" + JSON.stringify(item, null, 2));
+}
+
+function createProduct(event) {
+    event.preventDefault(); // evita recarregar a página
+    const prd = {
+        name: document.getElementById("name").value,
+    };
+    store.products.push(prd)
+    sendMessage('Produto cadastrado com sucesso!');
+    renderProductList();
+}
+
+//html help
+
+function card(title, content){
+    return `<div class="card shadow-sm">
+        <div class="card-header">
+            ${title}
+        </div>
+        <div class="card-body">
+        ${content}
+        </div>
+    </div>`
 }

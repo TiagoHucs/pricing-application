@@ -1,3 +1,11 @@
+body{
+ background-color: rgb(77, 77, 177);   
+}
+
 .nav-item{
     cursor: pointer;
+}
+
+.container{
+    margin-top: 15px;
 }
