@@ -9,14 +9,14 @@ const mainContent = document.getElementById('main-content');
 
 let store = {
     itens: [
-        {name: 'Água', price: 5.5, amount: 1, measure: 'lt'},
-        {name: 'Álcool', price: 10.5, amount: 500, measure: 'ml'},
-        {name: 'Cêra', price: 9.3, amount: 1, measure: 'kg'},
-        {name: 'Farinha', price: 6.0, amount: 100, measure: 'gr'},
-        {name: 'Frasco', price: 9.3,  amount: 1, measure: 'un'},
+        {id: geraId(), name: 'Água', price: 5.5, amount: 1, measure: 'lt'},
+        {id: geraId(), name: 'Álcool', price: 10.5, amount: 500, measure: 'ml'},
+        {id: geraId(), name: 'Cêra', price: 9.3, amount: 1, measure: 'kg'},
+        {id: geraId(), name: 'Farinha', price: 6.0, amount: 100, measure: 'gr'},
+        {id: geraId(), name: 'Frasco', price: 9.3,  amount: 1, measure: 'un'},
     ],
     products: [
-        {name: 'Agua de cheiro'}
+        {id: geraId(), name: 'Agua de cheiro'}
     ]
 }
 
@@ -40,26 +40,36 @@ function renderProductForm() {
     mainContent.innerHTML = newContent;
 }
 
-
 function renderItemList() {
-  // limpa conteúdo
-  mainContent.innerHTML = '';
 
-  // clona a estrutura da tabela
-  const tableClone = itemListTemplate.content.cloneNode(true);
-  const tbody = tableClone.querySelector('tbody');
+    mainContent.innerHTML = '';
+    let rows = '';
 
-  // para cada item, clona a linha e preenche células
-  store.itens.forEach(i => {
-    const rowClone = itemRowTemplate.content.cloneNode(true);
-    rowClone.querySelector('.cell-name').textContent = i.name;
-    rowClone.querySelector('.cell-price').textContent = i.price;
-    rowClone.querySelector('.cell-amount').textContent = i.amount +' '+ i.measure;
-    tbody.appendChild(rowClone);
-  });
+    store.itens.forEach(i => {
+        rows += `<tr>
+            <td>${i.id}</td>
+            <td>${i.name}</td>
+            <td>${convertReal(i.price)}</td>
+            <td>${i.amount}${i.measure}</td>
+            <td><span class="btn btn-sm btn-primary" onclick="deleteItem('${i.id}')">Excluir</td>
+        </tr>`
+    });
 
-  // insere a tabela pronta no DOM
-  mainContent.appendChild(tableClone);
+    mainContent.innerHTML = card('Produtos',
+        `<table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Preço</th>
+                    <th>Quantidade</th>
+                    <th>Açoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>`);
 }
 
 function renderProductList() {
@@ -70,13 +80,24 @@ function renderProductList() {
 
     // para cada item, clona a linha e preenche células
     store.products.forEach(p => {
-        rows += `<tr><td class="cell-name">${p.name}</td></tr>`
+        rows += `<tr>
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>
+                <span class="btn btn-sm btn-warning" onclick="factoryProduct('${p.id}')">Fabricar</span>
+                <span class="btn btn-sm btn-primary" onclick="deleteProduct('${p.id}')">Excluir</span>
+            </td>
+        </tr>`
     });
 
     mainContent.innerHTML = card('Produtos',
         `<table class="table table-bordered">
             <thead>
-                <tr><th>Nome</th></tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Ações</th>
+                </tr>
             </thead>
             <tbody>
                 ${rows}
@@ -102,6 +123,7 @@ function clearAll() {
 function createItem(event) {
     event.preventDefault(); // evita recarregar a página
     const item = {
+        id: geraId(),
         name: document.getElementById("name").value,
         price: parseFloat(document.getElementById("price").value),
         amount: parseFloat(document.getElementById("amount").value),
@@ -111,14 +133,28 @@ function createItem(event) {
     renderItemList();
 }
 
+function deleteItem(itemId) {
+    if (confirm(`Remover item ${itemId}?`)) {
+        store.itens = store.itens.filter(i => i.id !== itemId);
+        renderItemList();
+    }
+}
+
 function createProduct(event) {
     event.preventDefault(); // evita recarregar a página
     const prd = {
+        id: geraId(),
         name: document.getElementById("name").value,
     };
     store.products.push(prd)
-    sendMessage('Produto cadastrado com sucesso!');
     renderProductList();
+}
+
+function deleteProduct(prodId) {
+    if (confirm(`Remover o produto ${prodId}?`)) {
+        store.products = store.products.filter(i => i.id !== prodId);
+        renderProductList();
+    }
 }
 
 //html help
@@ -132,4 +168,14 @@ function card(title, content){
         ${content}
         </div>
     </div>`
+}
+
+
+// util
+function geraId() {
+    return crypto.randomUUID().split('-')[0];
+}
+
+function convertReal(value){
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
